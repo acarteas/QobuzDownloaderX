@@ -11,6 +11,7 @@ using System.Threading;
 using QobuzDownloaderX.Properties;
 using System.IO;
 using System.Globalization;
+using System.Linq;
 
 namespace QobuzDownloaderX
 {
@@ -466,6 +467,19 @@ namespace QobuzDownloaderX
 
         public async void getLinkType()
         {
+            int downloadLimit = -1;
+            int downloadOffset = 0;
+            if(!int.TryParse(limitTextbox.Text, out downloadLimit))
+            {
+                downloadLimit = -1;
+            }
+            if(!int.TryParse(offsetTextbox.Text, out downloadOffset))
+            {
+                downloadOffset = 0;
+            }
+            downloadAlbum.DownloadLimit = downloadLimit;
+            downloadAlbum.DownloadOffset = downloadOffset;
+
             downloadOutput.Focus();
             progressLabel.Invoke(new Action(() => progressLabel.Text = downloadOutputCheckLink));
 
@@ -543,7 +557,14 @@ namespace QobuzDownloaderX
                     await Task.Run(() => getInfo.getPlaylistInfoLabels(app_id, qobuz_id, user_auth_token));
                     QoPlaylist = getInfo.QoPlaylist;
                     updatePlaylistInfoLabels(QoPlaylist);
-                    foreach (var item in QoPlaylist.Tracks.Items)
+
+                    var query = QoPlaylist.Tracks.Items.Skip(downloadOffset);
+                    if(downloadLimit > 0)
+                    {
+                        query = query.Take(downloadLimit);
+                    }
+
+                    foreach (var item in query)
                     {
                         try
                         {
@@ -551,6 +572,7 @@ namespace QobuzDownloaderX
                             await Task.Run(() => getInfo.getTrackInfoLabels(app_id, track_id, user_auth_token));
                             QoItem = item;
                             QoAlbum = getInfo.QoAlbum;
+                            QoItem.TrackNumber = item.Position;
                             await Task.Run(() => downloadTrack.DownloadPlaylistTrackAsync(app_id, track_id, format_id, audio_format, user_auth_token, app_secret, downloadLocation, artistTemplate, albumTemplate, trackTemplate, playlistTemplate, QoAlbum, QoItem, QoPlaylist));
                         }
                         catch
@@ -1397,6 +1419,16 @@ namespace QobuzDownloaderX
             searchTracksButton.Visible = true;
             searchingLabel.Visible = false;
             return;
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
     public class Logger

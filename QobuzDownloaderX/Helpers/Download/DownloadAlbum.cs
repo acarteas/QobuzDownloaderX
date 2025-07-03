@@ -5,6 +5,7 @@ using System.IO;
 using QobuzDownloaderX.Properties;
 using System.Text.RegularExpressions;
 using ZetaLongPaths;
+using System.Linq;
 
 namespace QobuzDownloaderX
 {
@@ -28,6 +29,8 @@ namespace QobuzDownloaderX
 
         public int paddedTrackLength { get; set; }
         public int paddedDiscLength { get; set; }
+        public int DownloadOffset { get; set; } = 0;
+        public int DownloadLimit { get; set; } = -1;
 
         public string downloadPath { get; set; }
 
@@ -93,7 +96,12 @@ namespace QobuzDownloaderX
 
         public async Task DownloadTracksAsync(string app_id, string album_id, string format_id, string audio_format, string user_auth_token, string app_secret, string downloadLocation, string artistTemplate, string albumTemplate, string trackTemplate, Album album)
         {
-            foreach (var item in album.Tracks.Items)
+            var query = album.Tracks.Items.Skip(DownloadOffset);
+            if(DownloadLimit > 0)
+            {
+                query = query.Take(DownloadLimit);
+            }
+            foreach (var item in query)
             {
                 try
                 {
