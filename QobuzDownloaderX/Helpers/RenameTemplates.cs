@@ -150,6 +150,27 @@ namespace QobuzDownloaderX
             // Artist Templates
             /* bro there ain't shit here */
 
+            if (QoPlaylist == null)
+            {
+                // Release Format Templates
+                template = RenameFormatTemplate(template, qbdlxForm._qbdlxForm.format_id, fileFormat, QoAlbum.MaximumBitDepth, QoAlbum.MaximumSamplingRate, "%formatwithhiresquality%", "%formatwithquality%");
+            }
+            else
+            {
+                // Playlist Templates
+                template = template
+                    .Replace("%playlistid%", QoPlaylist.Id.ToString())
+                    .Replace("%playlisttitle%", QoPlaylist.Name)
+                    .Replace("%format%", fileFormat.ToUpper().TrimStart('.'))
+                    .Replace("%formatwithhiresquality%", fileFormat.ToUpper().TrimStart('.'))
+                    .Replace("%formatwithquality%", fileFormat.ToUpper().TrimStart('.'));
+
+                if (QoItem != null)
+                {
+                    template = template.Replace("%tracknumber%", QoItem.TrackNumber.ToString().PadLeft(QoPlaylist.TracksCount.ToString().Length, '0')); //follow playlist ordering rather than album ordering
+                }
+            }
+
             // Track Templates
             if (QoItem != null)
             {
@@ -189,22 +210,6 @@ namespace QobuzDownloaderX
                     .Replace("%samplerate%", QoAlbum.MaximumSamplingRate.ToString())
                     .Replace("%albumtitle%", QoAlbum.Version == null ? QoAlbum.Title : $"{QoAlbum.Title.TrimEnd()} ({QoAlbum.Version})")
                     .Replace("%format%", fileFormat.ToUpper().TrimStart('.'));
-            }
-
-            if (QoPlaylist == null)
-            {
-                // Release Format Templates
-                template = RenameFormatTemplate(template, qbdlxForm._qbdlxForm.format_id, fileFormat, QoAlbum.MaximumBitDepth, QoAlbum.MaximumSamplingRate, "%formatwithhiresquality%", "%formatwithquality%");
-            }
-            else
-            {
-                // Playlist Templates
-                template = template
-                    .Replace("%playlistid%", QoPlaylist.Id.ToString())
-                    .Replace("%playlisttitle%", QoPlaylist.Name)
-                    .Replace("%format%", fileFormat.ToUpper().TrimStart('.'))
-                    .Replace("%formatwithhiresquality%", fileFormat.ToUpper().TrimStart('.'))
-                    .Replace("%formatwithquality%", fileFormat.ToUpper().TrimStart('.'));
             }
 
             // GetSafeFilename call to make sure path will be valid
